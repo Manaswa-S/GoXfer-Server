@@ -93,6 +93,9 @@ jobs:
                     echo "➡️ Copying binary..."
 
                     scp -o StrictHostKeyChecking=no -i key.pem ./gh-artifacts/goxfer.server ${USER}@${HOST}:/home/${USER}/${BASE_PATH}/bin/goxfer.server
+
+                    chmod +x /home/${USER}/${BASE_PATH}/bin/goxfer.server
+
                   
             # restart systemd on EC2
             -   name: Restart service
@@ -112,7 +115,7 @@ jobs:
                         sudo systemctl status ${SERVNAME} --no-pager
                     "
                     
-                    
+
             #     # TODO: have an entire separate workflow with multiple things to test and check
             # -   name: Health Check
             #     env:
