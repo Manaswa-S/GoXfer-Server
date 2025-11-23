@@ -32,6 +32,7 @@ jobs:
                 uses: actions/download-artifact@v5
                 with:
                     path: ./artifact-folder
+                    run-id: ${{ github.event.workflow_run.id }}
                   
 
             -   name: Download built artifacts
