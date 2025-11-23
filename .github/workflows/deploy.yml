@@ -41,21 +41,7 @@ jobs:
                     ssh -o StrictHostKeyChecking=no -i key.pem ${USER}@${HOST} "
                         echo 'Connected from GitHub Actions!'
                     "
-
-            # stop systemd on EC2
-            -   name: Stop service on EC2
-                env:
-                    HOST: ${{ secrets.EC2_SSH_HOST_IP }}
-                    USER: ${{ secrets.EC2_SSH_USER }}
-                    KEY: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
-                    SERVNAME: ${{ secrets.EC2_SYSTEMD_SERVICE_NAME }}
-                run: |
-                    echo "${KEY}" > key.pem
-                    chmod 600 key.pem
-                    ssh -o StrictHostKeyChecking=no -i key.pem ${USER}@${HOST} "
-                        sudo systemctl stop ${SERVNAME}
-                    "
-                  
+                    
             # Setup EC2, directories and systemd file
             -   name: Deploy to EC2 (create dirs & service if needed)
                 env:
