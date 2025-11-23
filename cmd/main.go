@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"goxfer/server/cmd/db"
 	"goxfer/server/cmd/server"
+	"log"
 	"os"
 	"os/signal"
 	"syscall"
@@ -24,6 +25,7 @@ func main() {
 	dataStore, err := db.NewDataStore()
 	if err != nil {
 		fmt.Println(err)
+		log.Println(err)
 		return
 	}
 
