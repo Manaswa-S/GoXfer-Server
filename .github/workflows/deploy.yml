@@ -28,6 +28,17 @@ jobs:
             # -   name: Checkout Repository
             #     uses: actions/checkout@v3
 
+            -   name: Debug artifact listing
+                run: gh run artifacts ${{ github.event.workflow_run.id }}
+                env:
+                    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+            -   name: Download ALL artifacts
+                uses: actions/download-artifact@v5
+                with:
+                    path: ./artifact-folder
+                  
+
             -   name: Download built artifacts
                 uses: actions/download-artifact@v5
                 with:

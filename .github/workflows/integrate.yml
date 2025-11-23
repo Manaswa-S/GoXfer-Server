@@ -59,5 +59,13 @@ jobs:
                     path: |
                         goxfer.server
                         server-checksum.txt
+                    overwrite: true
+                    retention-days: 1
+
+            -   name: List uploaded artifact names
+                run: |
+                    echo "Artifacts uploaded:"
+                    ls -R ${{ github.workspace }}
+                  
 
         
