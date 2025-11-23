@@ -18,25 +18,27 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Debug workflow_run event
-        run: |
-          echo "Triggered by workflow: ${{ github.event.workflow_run.name }}"
-          echo "Conclusion: ${{ github.event.workflow_run.conclusion }}"
-          echo "Run ID: ${{ github.event.workflow_run.id }}"
-          echo "Branch: ${{ github.event.workflow_run.head_branch }}"
+        -   name: Debug workflow_run event
+            run: |
+                echo "Triggered by workflow: ${{ github.event.workflow_run.name }}"
+                echo "Conclusion: ${{ github.event.workflow_run.conclusion }}"
+                echo "Run ID: ${{ github.event.workflow_run.id }}"
+                echo "Branch: ${{ github.event.workflow_run.head_branch }}"
 
-      - name: Download ALL artifacts
-        uses: actions/download-artifact@v5
-        with:
-          path: ./artifact-folder
-          run-id: ${{ github.event.workflow_run.id }}
+        -   name: Download ALL artifacts
+            uses: actions/download-artifact@v5
+            with:
+                path: ./artifact-folder
+                run-id: ${{ github.event.workflow_run.id }}
+                github-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Download built artifact
-        uses: actions/download-artifact@v5
-        with:
-          name: goxfer-server-linux
-          path: ./artifact-folder
-          run-id: ${{ github.event.workflow_run.id }}
-
-      - name: List artifact contents
-        run: ls -R ./artifact-folder
+        -   name: Download built artifact
+            uses: actions/download-artifact@v5
+            with:
+                name: goxfer-server-linux
+                path: ./artifact-folder
+                run-id: ${{ github.event.workflow_run.id }}
+                github-token: ${{ secrets.GITHUB_TOKEN }}
+      
+        -   name: List artifact contents
+            run: ls -R ./artifact-folder
