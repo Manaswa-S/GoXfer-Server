@@ -20,21 +20,114 @@ jobs:
         runs-on: ubuntu-latest
 
         steps:
+            # Download server binary
             -   name: Download built server
                 uses: actions/download-artifact@v4
                 with:
                     name: goxfer-server-linux
-                    path: ./artifact-folder
+                    path: ./gh-artifacts
                     run-id: ${{ github.event.workflow_run.id }}
                     github-token: ${{ secrets.GITHUB_TOKEN }}
-        
+
+            # Test EC2 SSH connectivity
             -   name: SSH into EC2 (test)
                 env:
                     HOST: ${{ secrets.EC2_SSH_HOST_IP }}
                     USER: ${{ secrets.EC2_SSH_USER }}
                     KEY: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
                 run: |
-                    echo "$KEY" > key.pem
+                    echo "${KEY}" > key.pem
                     chmod 600 key.pem
-                    ssh -o StrictHostKeyChecking=no -i key.pem $USER@$HOST "echo 'Connected from GitHub Actions!'"
+                    ssh -o StrictHostKeyChecking=no -i key.pem ${USER}@${HOST} "
+                        echo 'Connected from GitHub Actions!'
+                    "
 
+            # stop systemd on EC2
+            -   name: Stop service on EC2
+                env:
+                    HOST: ${{ secrets.EC2_SSH_HOST_IP }}
+                    USER: ${{ secrets.EC2_SSH_USER }}
+                    KEY: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+                    SERVNAME: ${{ secrets.EC2_SYSTEMD_SERVICE_NAME }}
+                run: |
+                    echo "${KEY}" > key.pem
+                    chmod 600 key.pem
+                    ssh -o StrictHostKeyChecking=no -i key.pem ${USER}@${HOST} "
+                        sudo systemctl stop ${SERVNAME}
+                    "
+                  
+            # Setup EC2, directories and systemd file
+            -   name: Deploy to EC2 (create dirs & service if needed)
+                env:
+                    HOST: ${{ secrets.EC2_SSH_HOST_IP }}
+                    USER: ${{ secrets.EC2_SSH_USER }}
+                    KEY: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+                    BASE_PATH: ${{ secrets.EC2_BASE_PATH }}
+                    SYSTEMD_UNIT: ${{ secrets.EC2_UBUNTU_SYSTEMD_UNIT }}
+                    SERVNAME: ${{ secrets.EC2_SYSTEMD_SERVICE_NAME }}
+                run: |
+                    echo "${KEY}" > key.pem
+                    chmod 600 key.pem
+                    echo "Connecting to EC2..."
+
+                    ssh -o StrictHostKeyChecking=no -i key.pem ${USER}@${HOST} "
+                        set -e
+
+                        echo '$>$ Creating directories...'
+                        mkdir -p /home/${USER}/${BASE_PATH}/bin
+                        mkdir -p /home/${USER}/${BASE_PATH}/env
+                        mkdir -p /home/${USER}/${BASE_PATH}/logs
+
+                        echo '$>$ Writing systemd unit if missing...'
+                        if [ ! -f /etc/systemd/system/${SERVNAME} ]; then
+                            echo 'Systemd file missing -> creating...'
+                            sudo bash -c 'cat > /etc/systemd/system/${SERVNAME}' << 'EOF'
+                                ${SYSTEMD_UNIT}
+                                EOF
+
+                            sudo chmod 644 /etc/systemd/system/${SERVNAME}
+                            sudo systemctl daemon-reload
+                            sudo systemctl enable "${SERVNAME}"
+                        else
+                            echo 'Systemd file exists → skipping creation'
+                        fi
+                    "
+
+            # Upload server binary
+            -   name: Upload binary to EC2
+                env:
+                    HOST: ${{ secrets.EC2_SSH_HOST_IP }}
+                    USER: ${{ secrets.EC2_SSH_USER }}
+                    KEY: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+                    BASE_PATH: ${{ secrets.EC2_BASE_PATH }}
+                    SERVNAME: ${{ secrets.EC2_SYSTEMD_SERVICE_NAME }}
+                run: |
+                    echo "${KEY}" > key.pem
+                    chmod 600 key.pem
+                    echo "➡️ Copying binary..."
+
+                    scp -o StrictHostKeyChecking=no -i key.pem ./gh-artifacts/goxfer.server ${USER}@${HOST}:/home/${USER}/${BASE_PATH}/bin/goxfer.server
+                  
+            # restart systemd on EC2
+            -   name: Restart service
+                env:
+                    HOST: ${{ secrets.EC2_SSH_HOST_IP }}
+                    USER: ${{ secrets.EC2_SSH_USER }}
+                    KEY: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+                    SERVNAME: ${{ secrets.EC2_SYSTEMD_SERVICE_NAME }}
+                run: |
+                    echo "${KEY}" > key.pem
+                    chmod 600 key.pem
+                    echo '$>$ Restarting ${SERVNAME}...'
+
+                    ssh -o StrictHostKeyChecking=no -i key.pem ${USER}@${HOST} "
+                        sudo systemctl restart ${SERVNAME}
+                        sleep 10
+                        sudo systemctl status ${SERVNAME} --no-pager
+                    "
+                    
+            #     # TODO: have an entire separate workflow with multiple things to test and check
+            # -   name: Health Check
+            #     env:
+                    # HOST: {{ secrets.EC2_SSH_HOST_IP }}
+            #     run: curl -f http://$HOST:8080/health
