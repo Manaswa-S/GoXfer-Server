@@ -39,7 +39,7 @@ jobs:
                     echo "${KEY}" > key.pem
                     chmod 600 key.pem
                     ssh -o StrictHostKeyChecking=no -i key.pem ${USER}@${HOST} "
-                        echo 'Connected from GitHub Actions!'
+                        echo '$>$ Connected from GitHub Actions!'
                     "
 
             # Setup EC2, directories and systemd file
@@ -54,7 +54,7 @@ jobs:
                 run: |
                     echo "${KEY}" > key.pem
                     chmod 600 key.pem
-                    echo "Connecting to EC2..."
+                    echo "$>$ Connecting to EC2..."
 
                     ssh -o StrictHostKeyChecking=no -i key.pem ${USER}@${HOST} "
                         set -e
@@ -66,7 +66,7 @@ jobs:
 
                         echo '$>$ Writing systemd unit if missing...'
                         if [ ! -f /etc/systemd/system/${SERVNAME} ]; then
-                            echo 'Systemd file missing -> creating...'
+                            echo '$>$ Systemd file missing -> creating...'
                             sudo bash -c 'cat > /etc/systemd/system/${SERVNAME}' <<- 'EOF'
                             ${SYSTEMD_UNIT}
                     EOF
@@ -75,7 +75,7 @@ jobs:
                             sudo systemctl daemon-reload
                             sudo systemctl enable "${SERVNAME}"
                         else
-                            echo 'Systemd file exists → skipping creation'
+                            echo '$>$ Systemd file exists → skipping creation'
                         fi
                     "
 
@@ -90,14 +90,33 @@ jobs:
                 run: |
                     echo "${KEY}" > key.pem
                     chmod 600 key.pem
-                    echo "➡️ Copying binary..."
+                    echo "$>$ Copying binary..."
 
                     scp -o StrictHostKeyChecking=no -i key.pem ./gh-artifacts/goxfer.server ${USER}@${HOST}:/home/${USER}/${BASE_PATH}/bin/goxfer.server
-                    
+
                     ssh -o StrictHostKeyChecking=no -i key.pem ${USER}@${HOST} "
                         chmod +x /home/${USER}/${BASE_PATH}/bin/goxfer.server
                     "
 
+            # Upload server env fil
+            -   name: Upload environment file
+                env:
+                    HOST: ${{ secrets.EC2_SSH_HOST_IP }}
+                    USER: ${{ secrets.EC2_SSH_USER }}
+                    KEY: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+                    BASE_PATH: ${{ secrets.EC2_BASE_PATH }}
+                    ENV_DATA: ${{ secrets.EC2_ENV_DATA }}
+                run: |
+                    echo "${KEY}" > key.pem
+                    chmod 600 key.pem
+                    echo "$>$ Copying env file..."
+
+                    ssh -o StrictHostKeyChecking=no -i key.pem ${USER}@${HOST} "
+                        set -e
+                        sudo bash -c 'cat > /home/${USER}/${BASE_PATH}/env/.env' <<- 'EOF'
+                        ${ENV_DATA}
+                    EOF
+                    "
                   
             # restart systemd on EC2
             -   name: Restart service

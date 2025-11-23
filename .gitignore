@@ -1,3 +1,5 @@
 .env
 .goXfer.*
 goxfer.*
+.texts
+.internal
