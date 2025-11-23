@@ -69,7 +69,6 @@ jobs:
                     ${SYSTEMD_UNIT}
                     EOF
 
-                    
                         sudo chmod 644 /etc/systemd/system/${SERVNAME}
                         sudo systemctl daemon-reload
                         sudo systemctl enable "${SERVNAME}"
