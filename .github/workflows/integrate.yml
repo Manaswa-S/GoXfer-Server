@@ -48,7 +48,7 @@ jobs:
             #         args: --timeout 3m
 
             -   name: Generate checksums
-                run: sha256sum goxfer.server > checksums.txt
+                run: sha256sum goxfer.server > server-checksum.txt
 
             -   name: Upload built binary
                 uses: actions/upload-artifact@v4
