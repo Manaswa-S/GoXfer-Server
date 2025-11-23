@@ -93,8 +93,10 @@ jobs:
                     echo "➡️ Copying binary..."
 
                     scp -o StrictHostKeyChecking=no -i key.pem ./gh-artifacts/goxfer.server ${USER}@${HOST}:/home/${USER}/${BASE_PATH}/bin/goxfer.server
-
-                    chmod +x /home/${USER}/${BASE_PATH}/bin/goxfer.server
+                    
+                    ssh -o StrictHostKeyChecking=no -i key.pem ${USER}@${HOST} "
+                        chmod +x /home/${USER}/${BASE_PATH}/bin/goxfer.server
+                    "
 
                   
             # restart systemd on EC2
