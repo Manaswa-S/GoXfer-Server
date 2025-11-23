@@ -1,0 +1,13 @@
+name: GoXfer-Server-Integration
+
+on: 
+    push:
+        branches:
+            - main
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+        steps:
+            -   name: build-binary
+                run: go build -o goxfer.server cmd/main.go
