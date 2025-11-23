@@ -7,8 +7,6 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-
-	"github.com/joho/godotenv"
 )
 
 func main() {
@@ -17,11 +15,11 @@ func main() {
 	flowChan := make(chan os.Signal, 1)
 	signal.Notify(flowChan, syscall.SIGINT, syscall.SIGTERM)
 
-	err := godotenv.Load()
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
+	// err := godotenv.Load()
+	// if err != nil {
+	// 	fmt.Println(err)
+	// 	return
+	// }
 
 	dataStore, err := db.NewDataStore()
 	if err != nil {
