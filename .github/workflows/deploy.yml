@@ -28,6 +28,13 @@ jobs:
             # -   name: Checkout Repository
             #     uses: actions/checkout@v3
 
+            -   name: Debug workflow_run event
+                run: |
+                    echo "Triggered by workflow: ${{ github.event.workflow_run.name }}"
+                    echo "Conclusion: ${{ github.event.workflow_run.conclusion }}"
+                    echo "Run ID: ${{ github.event.workflow_run.id }}"
+
+
             -   name: Download ALL artifacts
                 uses: actions/download-artifact@v5
                 with:
