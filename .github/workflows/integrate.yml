@@ -1,4 +1,4 @@
-name: GoXfer-Server-Integration
+name: GoXfer-Server-CI
 
 on: 
     push:
