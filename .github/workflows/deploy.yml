@@ -67,9 +67,9 @@ jobs:
                         echo '$>$ Writing systemd unit if missing...'
                         if [ ! -f /etc/systemd/system/${SERVNAME} ]; then
                             echo 'Systemd file missing -> creating...'
-                            sudo bash -c 'cat > /etc/systemd/system/${SERVNAME}' << 'EOF'
+                            sudo bash -c 'cat > /etc/systemd/system/${SERVNAME}' <<- 'EOF'
                             ${SYSTEMD_UNIT}
-                            EOF
+                    EOF
 
                             sudo chmod 644 /etc/systemd/system/${SERVNAME}
                             sudo systemctl daemon-reload
