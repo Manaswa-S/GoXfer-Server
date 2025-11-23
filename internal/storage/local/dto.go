@@ -5,7 +5,6 @@ import (
 	"path/filepath"
 )
 
-
 // Builders
 
 func (s *Local) buildPath(base string) string {

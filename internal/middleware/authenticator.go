@@ -25,7 +25,7 @@ type Authenticator struct {
 
 func NewAuthenticator(auth auth.Authenticator) *Authenticator {
 	return &Authenticator{
-		auth: auth,
+		auth:         auth,
 		AllowedDrift: 15,
 	}
 }

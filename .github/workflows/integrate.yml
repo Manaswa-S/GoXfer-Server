@@ -9,13 +9,37 @@ jobs:
     build:
         runs-on: ubuntu-latest
         steps:
-            -   name: Checkout code
+            -   name: Checkout repository
                 uses: actions/checkout@v3
 
             -   name: Set up Go
-                uses: actions/setup-go@v4
+                uses: actions/setup-go@v6
                 with:
-                  go-version: 1.25
+                  go-version: 1.25.0
 
-            -   name: Build binary
+            -   name: Cache modules
+                uses: actions/cache@v4
+                with:
+                    path: |
+                        ~/.cache/go-build          # Go build cache (compiled object files)
+                        ${{ runner.temp }}/gomodcache  # Go module downloads
+                    key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+                    restore-keys: |
+                        ${{ runner.os }}-go-
+
+            -   name: Install dependencies
+                run: go mod download
+                env:
+                    GOMODCACHE: ${{ runner.temp }}/gomodcache    
+
+            -   name: Build
                 run: go build -o goxfer.server ./cmd
+
+            # -   name: Test
+            #     run: go build -o goxfer.server ./cmd
+
+            -   name: Check gofmt
+                run: |
+                    go fmt ./...
+                    git diff --exit-code
+        
