@@ -1,4 +1,4 @@
-name: GoXfer-Server-CD
+name: Server-CD
 
 permissions:
     actions: read
@@ -6,7 +6,7 @@ permissions:
 
 on:
   workflow_run:
-    workflows: ["GoXfer-Server-CI"]
+    workflows: ["Server-CI"]
     types: [completed]
 
 jobs:
