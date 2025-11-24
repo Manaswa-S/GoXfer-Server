@@ -68,7 +68,7 @@ jobs:
 
     setup:
         runs-on: ubuntu-latest
-
+        needs: build
         steps:
             # Download server binary
             -   name: Download built server
@@ -263,6 +263,9 @@ jobs:
     
     test:
         runs-on: ubuntu-latest
+        needs: restart
+        steps:
+        - run: echo "Skipping tests"
 
         #     # TODO: have an entire separate workflow with multiple things to test and check
         # -   name: Health Check
