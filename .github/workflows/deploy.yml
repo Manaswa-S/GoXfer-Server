@@ -88,7 +88,8 @@ jobs:
                     chmod 600 key.pem
                     echo "$>$ Copying binary..."
 
-                    scp -o StrictHostKeyChecking=no -i key.pem ./gh-artifacts/goxfer.server ${USER}@${HOST}:/home/${USER}/${BASE_PATH}/bin/goxfer.server
+                    scp -o StrictHostKeyChecking=no -i key.pem ./gh-artifacts/goxfer.server \
+                        ${USER}@${HOST}:/home/${USER}/${BASE_PATH}/bin/goxfer.server
 
                     ssh -o StrictHostKeyChecking=no -i key.pem ${USER}@${HOST} "
                         chmod +x /home/${USER}/${BASE_PATH}/bin/goxfer.server
@@ -153,7 +154,6 @@ jobs:
                 "
                 scp -o StrictHostKeyChecking=no -i key.pem -r migrations/* \
                     ${USER}@${HOST}:/home/${USER}/${BASE_PATH}/migrations/
-
 
         # --- 3. Run migrations only if folder changed ------------------------
         -   name: Run migrations
