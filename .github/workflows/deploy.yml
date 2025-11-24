@@ -260,12 +260,15 @@ jobs:
                         sleep 10
                         sudo systemctl status ${SERVNAME} --no-pager
                     "
-    
+
     test:
         runs-on: ubuntu-latest
         needs: restart
         steps:
         - run: echo "Skipping tests"
+        
+        
+=======
 
         #     # TODO: have an entire separate workflow with multiple things to test and check
         # -   name: Health Check
