@@ -66,6 +66,3 @@ jobs:
                 run: |
                     echo "Artifacts uploaded:"
                     ls -R ${{ github.workspace }}
-                  
-
-        
