@@ -10,7 +10,7 @@ on:
     types: [completed]
 
 jobs:
-    deploy:
+    setup:
 
         # TESTING
         if: >
@@ -62,6 +62,7 @@ jobs:
                         echo '$>$ Creating directories...'
                         mkdir -p /home/${USER}/${BASE_PATH}/bin
                         mkdir -p /home/${USER}/${BASE_PATH}/env
+                        mkdir -p /home/${USER}/${BASE_PATH}/migrate
                         mkdir -p /home/${USER}/${BASE_PATH}/logs
 
                         echo '$>$ Writing systemd unit...'
@@ -93,7 +94,7 @@ jobs:
                         chmod +x /home/${USER}/${BASE_PATH}/bin/goxfer.server
                     "
 
-            # Upload server env fil
+            # Upload server env file
             -   name: Upload environment file
                 env:
                     HOST: ${{ secrets.EC2_SSH_HOST_IP }}
@@ -112,7 +113,98 @@ jobs:
                     ${ENV_DATA}
                     EOF
                     "
-                  
+
+            # Upload server env file
+            -   name: Upload environment file
+                env:
+                    HOST: ${{ secrets.EC2_SSH_HOST_IP }}
+                    USER: ${{ secrets.EC2_SSH_USER }}
+                    KEY: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+                    BASE_PATH: ${{ secrets.EC2_BASE_PATH }}
+                    ENV_DATA: ${{ secrets.EC2_ENV_DATA }}
+                run: |
+                    echo "${KEY}" > key.pem
+                    chmod 600 key.pem
+                    echo "$>$ Copying env file..."
+
+                    ssh -o StrictHostKeyChecking=no -i key.pem ${USER}@${HOST} "
+                        set -e
+                        sudo bash -c 'cat > /home/${USER}/${BASE_PATH}/env/.env' <<- 'EOF'
+                    ${ENV_DATA}
+                    EOF
+                    "
+         
+    migrations:
+        runs-on: ubuntu-latest
+        needs: setup
+
+        steps:
+        -   name: Checkout repo
+            uses: actions/checkout@v4
+
+        # Detect if ./migrations/** changed
+        -   name: Check for migration changes
+            id: filter
+            uses: dorny/paths-filter@v3
+            with:
+                filters: |
+                    migrations:
+                    - 'migrations/**'
+
+        # Upload /migrations/** to EC2
+        -   name: Upload migrations to EC2
+            env:
+                HOST: ${{ secrets.EC2_SSH_HOST_IP }}
+                USER: ${{ secrets.EC2_SSH_USER }}
+                KEY: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+                BASE_PATH: ${{ secrets.EC2_BASE_PATH }}
+            run: |
+                if: steps.filter.outputs.migrations == 'true'
+                echo "${KEY}" > key.pem
+                chmod 600 key.pem
+                echo "$>$ Copying migrations..."
+
+                scp -o StrictHostKeyChecking=no -i key.pem -r migrations/ ${USER}@${HOST}:/home/${USER}/${BASE_PATH}/migrations/
+
+        # --- 3. Run migrations only if folder changed ------------------------
+        -   name: Run migrations
+            env:
+                HOST: ${{ secrets.EC2_SSH_HOST_IP }}
+                USER: ${{ secrets.EC2_SSH_USER }}
+                KEY: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+                BASE_PATH: ${{ secrets.EC2_BASE_PATH }}
+                PG_STR: ${{ secrets.RDS_PG_MAIN_STR }}
+            if: steps.filter.outputs.migrations == 'true'
+            run: |
+                echo "${KEY}" > key.pem
+                chmod 600 key.pem
+                echo "$>$ Migration files changed. Applying database migrations..."
+
+                ssh -o StrictHostKeyChecking=no -i key.pem ${USER}@${HOST} "
+                    if command -v migrate >/dev/null 2>&1; then
+                        echo "migrate already installed"
+                    else
+                        echo "migrate not found, installing..."
+                        curl -fsSL https://packagecloud.io/golang-migrate/migrate/gpgkey | sudo gpg --dearmor -o /etc/apt/keyrings/migrate.gpg
+                        echo "deb [signed-by=/etc/apt/keyrings/migrate.gpg] https://packagecloud.io/golang-migrate/migrate/ubuntu/ $(lsb_release -sc) main" > /etc/apt/sources.list.d/migrate.list
+                        sudo apt-get update
+                        sudo apt-get install -y migrate
+                    fi
+
+                    migrate -database ${PG_STR} -path /home/${USER}/${BASE_PATH}/migrations/db up
+                "
+
+            # --- 4. If skipped ---------------------------------------------------
+        -   name: No migration needed
+            if: steps.filter.outputs.migrations != 'true'
+            run: echo "No migration changes detected. Skipping."
+
+    restart:
+        runs-on: ubuntu-latest
+        needs: migrations
+
+        steps:
+
             # restart systemd on EC2
             -   name: Restart service
                 env:
@@ -132,8 +224,8 @@ jobs:
                         sudo systemctl status ${SERVNAME} --no-pager
                     "
 
-            #     # TODO: have an entire separate workflow with multiple things to test and check
-            # -   name: Health Check
-            #     env:
-                    # HOST: {{ secrets.EC2_SSH_HOST_IP }}
-            #     run: curl -f http://$HOST:8080/health
+        #     # TODO: have an entire separate workflow with multiple things to test and check
+        # -   name: Health Check
+        #     env:
+                # HOST: {{ secrets.EC2_SSH_HOST_IP }}
+        #     run: curl -f http://$HOST:8080/health
