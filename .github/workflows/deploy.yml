@@ -143,8 +143,13 @@ jobs:
                 echo "${KEY}" > key.pem
                 chmod 600 key.pem
                 echo "$>$ Copying migrations..."
+                
+                ssh -o StrictHostKeyChecking=no -i key.pem ${USER}@${HOST} "
+                    set -e
+                    mkdir -p /home/${USER}/${BASE_PATH}/migrations
+                "
+                scp -o StrictHostKeyChecking=no -i key.pem -r migrations/* ${USER}@${HOST}:/home/${USER}/${BASE_PATH}/migrations/
 
-                scp -o StrictHostKeyChecking=no -i key.pem -r migrations/ ${USER}@${HOST}:/home/${USER}/${BASE_PATH}/migrations/
 
         # --- 3. Run migrations only if folder changed ------------------------
         -   name: Run migrations
@@ -161,6 +166,7 @@ jobs:
                 echo "$>$ Migration files changed. Applying database migrations..."
 
                 ssh -o StrictHostKeyChecking=no -i key.pem ${USER}@${HOST} "
+                    set -e
                     if ! command -v migrate >/dev/null 2>&1; then
                         echo "$>$ Installing migrate..."
                         curl -fsSL https://packagecloud.io/golang-migrate/migrate/gpgkey | sudo gpg --dearmor -o /etc/apt/keyrings/migrate.gpg
