@@ -143,12 +143,16 @@ jobs:
                 echo "${KEY}" > key.pem
                 chmod 600 key.pem
                 echo "$>$ Copying migrations..."
-                
+           
                 ssh -o StrictHostKeyChecking=no -i key.pem ${USER}@${HOST} "
                     set -e
+                    echo ' - Creating folder if missing...'
                     mkdir -p /home/${USER}/${BASE_PATH}/migrations
+                    echo ' - Cleaning old migrations...'
+                    rm -f /home/${USER}/${BASE_PATH}/migrations/*
                 "
-                scp -o StrictHostKeyChecking=no -i key.pem -r migrations/* ${USER}@${HOST}:/home/${USER}/${BASE_PATH}/migrations/
+                scp -o StrictHostKeyChecking=no -i key.pem -r migrations/* \
+                    ${USER}@${HOST}:/home/${USER}/${BASE_PATH}/migrations/
 
 
         # --- 3. Run migrations only if folder changed ------------------------
