@@ -17,7 +17,7 @@ func randomCharFromSet(set string) byte {
 	return set[int(n[0])%len(set)]
 }
 
-// TODO: this does not guarantee unique ids every time..
+// TODO: this does not guarantee unique ids every time.
 func GenerateBucketKey() (string, error) {
 	part1 := make([]byte, 3)
 	part2 := make([]byte, 3)
