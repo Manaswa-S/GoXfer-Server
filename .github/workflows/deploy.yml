@@ -230,7 +230,7 @@ jobs:
 
                     migrate -database ${PG_STR} -path /home/${USER}/${BASE_PATH}/migrations/db up
                 "
-
+                
             # --- 4. If skipped ---------------------------------------------------
         -   name: No migration needed
             if: steps.filter.outputs.migrations != 'true'
