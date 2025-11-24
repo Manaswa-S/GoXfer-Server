@@ -4,21 +4,71 @@ permissions:
     actions: read
     contents: read
 
-on:
-  workflow_run:
-    workflows: ["Server-CI"]
-    types: [completed]
+on: 
+    push:
+        branches:
+            - master
 
 jobs:
-    setup:
-
-        # TESTING
-        if: >
-            ${{ github.event.workflow_run.conclusion == 'success' &&
-            github.event.workflow_run.head_branch == 'main' }}
-
+    build:
         runs-on: ubuntu-latest
+        steps:
+            -   name: Checkout repository
+                uses: actions/checkout@v3
 
+            -   name: Set up Go
+                uses: actions/setup-go@v6
+                with:
+                  go-version: 1.25.1
+
+            -   name: Cache modules
+                uses: actions/cache@v4
+                with:
+                    path: |
+                        ~/.cache/go-build
+                        ${{ runner.temp }}/gomodcache
+                    key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+                    restore-keys: |
+                        ${{ runner.os }}-go-
+
+            -   name: Install dependencies
+                run: go mod download
+                env:
+                    GOMODCACHE: ${{ runner.temp }}/gomodcache
+
+            -   name: Build
+                run: GOOS=linux GOARCH=amd64 go build -o goxfer.server ./cmd
+
+            -   name: Run tests
+                run: go test ./... -cover
+
+            -   name: Check gofmt
+                run: |
+                    go fmt ./...
+                    git diff --exit-code
+
+            # -   name: golangci-lint
+            #     uses: golangci/golangci-lint-action@v8
+            #     with:
+            #         version: v2.5.0
+            #         args: --timeout 3m
+
+            -   name: Generate checksums
+                run: sha256sum goxfer.server > server-checksum.txt
+
+            -   name: Upload built binary
+                uses: actions/upload-artifact@v4
+                with:
+                    name: goxfer-server-linux
+                    path: |
+                        goxfer.server
+                        server-checksum.txt
+                    overwrite: true
+                    retention-days: 1
+
+    setup:
+        runs-on: ubuntu-latest
+        needs: build
         steps:
             # Download server binary
             -   name: Download built server
@@ -26,7 +76,6 @@ jobs:
                 with:
                     name: goxfer-server-linux
                     path: ./gh-artifacts
-                    run-id: ${{ github.event.workflow_run.id }}
                     github-token: ${{ secrets.GITHUB_TOKEN }}
 
             # Test EC2 SSH connectivity
@@ -62,7 +111,7 @@ jobs:
                         echo '$>$ Creating directories...'
                         mkdir -p /home/${USER}/${BASE_PATH}/bin
                         mkdir -p /home/${USER}/${BASE_PATH}/env
-                        mkdir -p /home/${USER}/${BASE_PATH}/migrate
+                        mkdir -p /home/${USER}/${BASE_PATH}/migrations
                         mkdir -p /home/${USER}/${BASE_PATH}/logs
 
                         echo '$>$ Writing systemd unit...'
@@ -212,6 +261,12 @@ jobs:
                         sudo systemctl status ${SERVNAME} --no-pager
                     "
 
+    test:
+        runs-on: ubuntu-latest
+        needs: restart
+        steps:
+        - run: echo "Skipping tests"
+        
         #     # TODO: have an entire separate workflow with multiple things to test and check
         # -   name: Health Check
         #     env:
