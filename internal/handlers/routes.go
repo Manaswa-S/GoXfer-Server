@@ -21,6 +21,8 @@ func NewHandler(srv *service.Service) *Handler {
 
 func (h *Handler) RegisterRoutes(publicGrp, privateGrp *gin.RouterGroup) error {
 
+	publicGrp.GET("/welcome", h.getWelcome)
+
 	publicGrp.GET("/bucket/open/config", h.getConfigs)
 
 	// initiate a bucket creation, opaque step 1, registration request

@@ -123,17 +123,23 @@ func (s *Local) Delete(id uuid.UUID) (err error) {
 
 	err = os.Remove(dataPath)
 	if err != nil {
-		return err
+		if !os.IsNotExist(err) {
+			return err
+		}
 	}
 
 	err = os.Remove(metaPath)
 	if err != nil {
-		return err
+		if !os.IsNotExist(err) {
+			return err
+		}
 	}
 
 	err = os.Remove(digPath)
 	if err != nil {
-		return err
+		if !os.IsNotExist(err) {
+			return err
+		}
 	}
 
 	return nil

@@ -76,8 +76,8 @@ type CompleteUploadReq struct {
 	EncFileInfo      string `json:"encFileInfo"`      // base64(encrypt(FileInfo))
 	EncFileInfoNonce string `json:"encFileInfoNonce"` // base64(encrypt(FileInfo))
 
-	EncMeta   string `json:"metadata"`  // base64(encrypt(MetaWrapper))
-	MetaNonce string `json:"metaNonce"` // base64(nonce from encrypt(MetaWrapper))
+	EncMeta      string `json:"encMetadata"`  // base64(encrypt(MetaWrapper))
+	EncMetaNonce string `json:"encMetaNonce"` // base64(nonce from encrypt(MetaWrapper))
 
 	EncDataChecksum string `json:"dataChecksum"` // sha(Data), sha is already base64()
 	EncMetaChecksum string `json:"metaChecksum"` // sha(EncMeta)

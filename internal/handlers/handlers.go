@@ -8,6 +8,10 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+func (h *Handler) getWelcome(ctx *gin.Context) {
+	ctx.Status(http.StatusOK)
+}
+
 func (h *Handler) createBucketS1(ctx *gin.Context) {
 	req := new(dto.CreateBucketS1Req)
 	if err := ctx.Bind(req); err != nil {
