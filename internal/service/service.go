@@ -139,7 +139,6 @@ func (s *Service) CreateBucketS2(ctx *gin.Context, req *dto.CreateBucketS2Req) (
 	}); err != nil {
 		return nil, &errs.Errorf{Error: err}
 	}
-	time.Sleep(3 * time.Second)
 
 	return &dto.CreateBucketS2Resp{
 		BucketKey: bucKey,
