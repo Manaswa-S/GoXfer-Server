@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"goxfer/server/cmd/db"
 	"goxfer/server/cmd/server"
-	"log"
 	"os"
 	"os/signal"
 	"syscall"
@@ -21,13 +20,11 @@ func main() {
 	err := godotenv.Load()
 	if err != nil {
 		fmt.Println(err)
-		return
 	}
 
 	dataStore, err := db.NewDataStore()
 	if err != nil {
 		fmt.Println(err)
-		log.Println(err)
 		return
 	}
 
