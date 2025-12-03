@@ -110,7 +110,6 @@ type DownloadDigestResp struct {
 }
 
 // >>>>>
-
 type GetBucketDataResp struct {
 	Name string `json:"name"`
 }
