@@ -153,6 +153,27 @@ func (s *Service) GetConfigs(ctx *gin.Context) (*dto.GetOpaqueConfigs, *errs.Err
 	}, nil
 }
 
+func (s *Service) GetBucketData(ctx *gin.Context) (*dto.GetBucketDataResp, *errs.Errorf) {
+	bucKey := s.getCtxVals(ctx)
+	bucID, err := s.queries.GetBucketID(ctx, bucKey)
+	if err != nil {
+		return nil, &errs.Errorf{
+			Error: err,
+		}
+	}
+
+	name, err := s.queries.GetBucketData(ctx, bucID)
+	if err != nil {
+		return nil, &errs.Errorf{
+			Error: err,
+		}
+	}
+
+	return &dto.GetBucketDataResp{
+		Name: name,
+	}, nil
+}
+
 // TODO: ttl needed
 func (s *Service) OpenBucketS1(ctx *gin.Context, req *dto.OpenBucketS1Req) (*dto.OpenBucketS1Resp, *errs.Errorf) {
 	bucKey := string(utils.DecodeBase64(req.BucketKey))

@@ -34,6 +34,20 @@ func (q *Queries) GetBucket(ctx context.Context, key string) (Bucket, error) {
 	return i, err
 }
 
+const getBucketData = `-- name: GetBucketData :one
+SELECT
+    buckets.name
+FROM buckets
+WHERE buckets.bucket_id = $1
+`
+
+func (q *Queries) GetBucketData(ctx context.Context, bucketID int64) (string, error) {
+	row := q.db.QueryRow(ctx, getBucketData, bucketID)
+	var name string
+	err := row.Scan(&name)
+	return name, err
+}
+
 const getBucketID = `-- name: GetBucketID :one
 SELECT 
     buckets.bucket_id

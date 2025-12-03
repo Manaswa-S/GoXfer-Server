@@ -1,4 +1,3 @@
-
 -- name: InsertBucket :one
 INSERT INTO buckets (key, name, cred_id, record, cipher)
 VALUES ($1, $2, $3, $4, $5)
@@ -15,6 +14,12 @@ SELECT
     buckets.bucket_id
 FROM buckets
 WHERE buckets.key = $1;
+
+-- name: GetBucketData :one
+SELECT
+    buckets.name
+FROM buckets
+WHERE buckets.bucket_id = $1;
 
 -- name: InsertNewFile :exec
 INSERT INTO files (buc_id, upload_id, valid, data_file, file_uuid, meta_file, digest_file, base_path, file_info, file_info_nonce, data_file_size)

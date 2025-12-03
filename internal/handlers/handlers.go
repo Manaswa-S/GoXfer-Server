@@ -77,6 +77,15 @@ func (h *Handler) openBucketS2(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, resp)
 }
 
+func (h *Handler) getBucketData(ctx *gin.Context) {
+	resp, errf := h.service.GetBucketData(ctx)
+	if h.handleErrf(ctx, errf) {
+		return
+	}
+
+	ctx.JSON(http.StatusOK, resp)
+}
+
 func (h *Handler) initUpload(ctx *gin.Context) {
 	req := new(dto.InitUploadReq)
 	if err := ctx.Bind(req); err != nil {

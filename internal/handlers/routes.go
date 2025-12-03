@@ -35,6 +35,9 @@ func (h *Handler) RegisterRoutes(publicGrp, privateGrp *gin.RouterGroup) error {
 	// complete a bucket opening, opaque step 2, login finish
 	publicGrp.POST("/bucket/open/s2", h.openBucketS2)
 
+	// get bucket metadata like name, last active, etc
+	privateGrp.GET("/bucket", h.getBucketData)
+
 	// initiate a new file upload
 	privateGrp.POST("/file/upload/init", h.initUpload)
 	// upload file parts
