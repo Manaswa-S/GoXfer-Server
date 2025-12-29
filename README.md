@@ -1,6 +1,5 @@
 # GoXfer 
 ### Client-Sealed, Stateless, Ephemeral, Zero-Trust, End-to-End Encrypted Data Storage System
-
 ---
 
 Security-first file transfer system designed around **zero-trust principles**, **client-side encryption**, and **minimal attack surface**.  
@@ -9,7 +8,7 @@ Consists of a Go backend and a terminal-first (TUI) client, intentionally avoidi
 ---
 > This is **not** a cloud storage clone. It is a systems-oriented project focused on cryptography, secure client-server design, and real-world deployment constraints.
 
-#### TUI Demo Video: <a href="https://github.com/Manaswa-S/GoXfer-TUI/releases/download/demo-v1/Screencast.from.03-12-25.02.29.36.PM.IST.webm">Link</a>
+#### TUI Demo Video: <a href="https://github.com/Manaswa-S/GoXfer-TUI/releases/download/demo-v1.2/goxfer-tui-v1-demo.webm">Link</a>
 ---
 
 ### Project Goals & Design Principles
